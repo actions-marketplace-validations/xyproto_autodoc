@@ -1,0 +1,88 @@
+name: Go package
+
+on: [push]
+
+jobs:
+  setup-ollama:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Cache Ollama
+        id: cache-ollama
+        uses: actions/cache@v3
+        with:
+          path: |
+            ollama
+            .ollama
+          key: ${{ runner.os }}-ollama
+
+      - name: Build ollama
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
+        run: git clone --recursive https://github.com/jmorganca/ollama && cd ollama && go generate ./... && go build -v
+
+      - name: Test the ollama executable
+        run: ollama/ollama --help
+
+      - name: Upload ollama and models as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ollama-artifacts
+          path: |
+            ollama/ollama
+            .ollama/
+
+  run-model:
+    needs: setup-ollama
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        model:
+          - 'llama2:chat'
+          - 'llama2:text'
+          #- 'mistral:7b-text'
+          #- 'mistral:7b-instruct'
+          #- 'wizardlm-uncensored:13b'
+          #- 'codeup:13b-llama2-chat'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download ollama and models artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ollama-artifacts
+
+      - name: Set execute permissions for ollama
+        run: chmod +x ollama/ollama
+
+      - name: Run ollama in the background
+        run: ollama/ollama serve &
+
+      - name: Pull an image
+        run: ollama/ollama pull ${{ matrix.model }}
+
+      - name: Generate a API documentation
+        run: |
+          MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
+          ollama/ollama run ${{ matrix.model }} "$(cat prompt.txt) $(cat main.go)" > "${MODEL_NAME}_result.md"
+
+      - name: Output the API documentation
+        run: |
+          MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
+          cat "${MODEL_NAME}_apidoc.md"
+
+      - name: Commit and push the API documentation
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add *_apidoc.md || true
+          git commit -m "Add result files from GitHub Actions"
+          git log -1 --pretty=%B | grep -q "Update API documentation" || git commit -m "Update API documentation" && git push || true
+          git push
