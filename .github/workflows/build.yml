@@ -12,7 +12,7 @@ jobs:
         with:
           path: |
             ollama
-            .ollama
+            .ollama/
           key: ${{ runner.os }}-ollama
 
       - name: Checkout code
@@ -62,7 +62,7 @@ jobs:
         with:
           path: |
             ollama
-            .ollama
+            .ollama/
           key: ${{ runner.os }}-ollama
 
       - name: Set execute permissions for ollama
@@ -95,7 +95,7 @@ jobs:
       - name: Generate API documentation
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
-          ollama/ollama run "${MODEL_NAME}" > "${MODEL_NAME}.md"
+          ollama/ollama run "${MODEL_NAME}" "$(cat prompt.txt)" > "${MODEL_NAME}.md"
 
       - name: Cat the Markdown document
         run: |
