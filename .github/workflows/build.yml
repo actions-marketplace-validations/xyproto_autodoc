@@ -31,12 +31,16 @@ jobs:
       - name: Test the ollama executable
         run: ollama/ollama --help
 
-      - name: Upload the ollama executable as an artifact
+      - name: Pull the codeup model
+        run: ollama/ollama pull codeup
+
+      - name: Upload the ollama executable and codeup model as artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ollama-artifacts
           path: |
             ollama/ollama
+            .ollama
 
   run-model:
     needs: setup-ollama
@@ -44,7 +48,8 @@ jobs:
     strategy:
       matrix:
         model:
-          - 'llama2:chat'
+          - 'codeup:latest'
+          #- 'llama2:chat'
           #- 'llama2:text'
           #- 'mistral:7b-text'
           #- 'mistral:7b-instruct'
@@ -54,7 +59,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get the ollama executable artifact
+      - name: Get the ollama executable artifact and codeup model
         uses: actions/download-artifact@v3
         with:
           name: ollama-artifacts
@@ -68,7 +73,7 @@ jobs:
       - name: Pull the model
         run: ollama/ollama pull ${{ matrix.model }}
 
-      - name: Cache .ollama directory
+      - name: Cache the .ollama directory
         uses: actions/cache@v3
         with:
           path: .ollama
@@ -80,9 +85,9 @@ jobs:
         run: |
           echo "FROM ${{ matrix.model }}" > Modelfile
           echo "PARAMETER temperature 0.1" >> Modelfile
-          echo "EMBED main.go" >> Modelfile
+          #echo "EMBED main.go" >> Modelfile
           echo "SYSTEM \"\"\"" >> Modelfile
-          cat main.go >> Modelfile
+          #cat main.go >> Modelfile
           cat prompt.txt >> Modelfile
           echo "\"\"\"" >> Modelfile
 
@@ -92,12 +97,12 @@ jobs:
       - name: Pull and build the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama create "${MODEL_NAME}" -f Modelfile
+          ollama/ollama create "${MODEL_NAME}"_custom -f Modelfile
 
       - name: Generate API documentation
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama run "${MODEL_NAME}" > "${MODEL_NAME}_result.md"
+          ollama/ollama run "${MODEL_NAME}"_custom > "${MODEL_NAME}_result.md"
 
       - name: Output the API documentation
         run: |
