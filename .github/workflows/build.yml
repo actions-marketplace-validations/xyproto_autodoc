@@ -6,16 +6,18 @@ jobs:
   setup-ollama:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Cache the ollama executable
+      - name: Cache the ollama executable and models after these steps completes
         id: cache-ollama
         uses: actions/cache@v3
         with:
           path: |
             ollama
+            .ollama
           key: ${{ runner.os }}-ollama
+
+      - name: Checkout code
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
 
       - name: Setup Go
         if: steps.cache-ollama.outputs.cache-hit != 'true'
@@ -25,17 +27,17 @@ jobs:
 
       - name: Build Ollama
         if: steps.cache-ollama.outputs.cache-hit != 'true'
-        run: git clone --recursive https://github.com/jmorganca/ollama && cd ollama && go generate ./... && go build -v
+        run: |
+          git clone --recursive https://github.com/jmorganca/ollama && cd ollama && go generate ./... && go build -v
 
       - name: Test the ollama executable
         run: ollama/ollama --help
 
-      - name: Upload the ollama executable as an artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ollama-artifacts
-          path: |
-            ollama/ollama
+      - name: Run ollama in the background
+        run: ollama/ollama serve &
+
+      - name: Pull the model
+        run: ollama/ollama pull ${{ matrix.model }}
 
   run-model:
     needs: setup-ollama
@@ -54,39 +56,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get the ollama executable artifact and codeup model
-        uses: actions/download-artifact@v3
+      - name: Cache the ollama executable and models after these steps completes
+        id: cache-ollama
+        uses: actions/cache@v3
         with:
-          name: ollama-artifacts
+          path: |
+            ollama
+            .ollama
+          key: ${{ runner.os }}-ollama
 
       - name: Set execute permissions for ollama
         run: chmod +x ollama/ollama
 
-      # Attempt to restore the cache for the .ollama directory
-      - name: Cache the .ollama directory
-        id: cache-ollama
-        uses: actions/cache@v3
-        with:
-          path: .ollama
-          key: ${{ runner.os }}-${{ matrix.model }}-ollama-cache
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.model }}-
-
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
-      # Only pull the model if the cache wasn't restored
       - name: Pull the model
-        if: steps.cache-ollama.outputs.cache-hit != 'true'
         run: ollama/ollama pull ${{ matrix.model }}
-
-      - name: Cache the .ollama directory
-        uses: actions/cache@v3
-        with:
-          path: .ollama
-          key: ${{ runner.os }}-${{ matrix.model }}-ollama-cache
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.model }}-
 
       - name: Generate a Modelfile
         run: |
