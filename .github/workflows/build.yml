@@ -36,8 +36,8 @@ jobs:
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
-      - name: Pull the model
-        run: ollama/ollama pull ${{ matrix.model }}
+      - name: Pull the default model
+        run: ollama/ollama pull codeup
 
   run-model:
     needs: setup-ollama
@@ -71,8 +71,8 @@ jobs:
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
-      - name: Pull the default model
-        run: ollama/ollama pull codeup
+      - name: Pull the current model
+        run: ollama/ollama pull ${{ matrix.model }}
 
       - name: Generate a Modelfile
         run: |
