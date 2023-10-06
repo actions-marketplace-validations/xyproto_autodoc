@@ -111,23 +111,24 @@ jobs:
 
       - name: Pull and build the model
         run: |
-          MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama create "${MODEL_NAME}"_custom -f Modelfile
+          MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
+          ollama/ollama create "${MODEL_NAME}" -f Modelfile
 
       - name: Generate API documentation
         run: |
-          MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama run "${MODEL_NAME}"_custom > "${MODEL_NAME}_apidoc.md"
+          MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
+          ollama/ollama run "${MODEL_NAME}" > "${MODEL_NAME}.md"
 
       - name: Output the API documentation
         run: |
-          MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          cat "${MODEL_NAME}_apidoc.md"
+          MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
+          cat "${MODEL_NAME}.md"
 
       - name: Commit and push the API documentation
         run: |
+          MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add *_apidoc.md || true
+          git add "${MODEL_NAME}.md" || true
           git commit -m "Add result files from GitHub Actions"
           git log -1 --pretty=%B | grep -q "Update API documentation" || git commit -m "Update API documentation" && git push || true
