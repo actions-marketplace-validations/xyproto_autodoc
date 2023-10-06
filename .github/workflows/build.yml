@@ -31,6 +31,9 @@ jobs:
       - name: Test the ollama executable
         run: ollama/ollama --help
 
+      - name: Run ollama in the background
+        run: ollama/ollama serve &
+
       - name: Pull the codeup model
         run: ollama/ollama pull codeup
 
