@@ -131,4 +131,3 @@ jobs:
           git add *_apidoc.md || true
           git commit -m "Add result files from GitHub Actions"
           git log -1 --pretty=%B | grep -q "Update API documentation" || git commit -m "Update API documentation" && git push || true
-          git push
