@@ -42,16 +42,23 @@ jobs:
       - name: Pull the model
         run: ollama/ollama pull ${{ matrix.model }}
 
-      - name: Generate a Modelfile
-        run: |
-          echo "FROM ${{ matrix.model }}" > Modelfile
-          #echo "PARAMETER temperature 0.1" >> Modelfile
+      #- name: Generate a Modelfile
+      #  run: |
+      #    echo "FROM ${{ matrix.model }}" > Modelfile
+      #    echo "PARAMETER temperature 0.2" >> Modelfile
+      #- name: Build the model file
+      #  run: |
+      #    MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
+      #    ollama/ollama create "${MODEL_NAME}" -f Modelfile
+      #- name: Run Ollama and display the output
+      #  run: |
+      #    MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
+      #    ollama/ollama run "${MODEL_NAME}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME}.md"
 
-      - name: Run ollama with the model
+      - name: Run Ollama and redirect to file
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
-          ollama/ollama create "${MODEL_NAME}" -f Modelfile
-          ollama/ollama run "${MODEL_NAME}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME}.md"
+          ollama/ollama run "{{ matrix.model }}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME}.md"
 
       - name: Commit and push the API documentation
         run: |
