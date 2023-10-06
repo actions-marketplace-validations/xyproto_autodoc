@@ -70,10 +70,22 @@ jobs:
       - name: Set execute permissions for ollama
         run: chmod +x ollama/ollama
 
+      # Attempt to restore the cache for the .ollama directory
+      - name: Cache the .ollama directory
+        id: cache-ollama
+        uses: actions/cache@v3
+        with:
+          path: .ollama
+          key: ${{ runner.os }}-${{ matrix.model }}-ollama-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.model }}-
+
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
+      # Only pull the model if the cache wasn't restored
       - name: Pull the model
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
         run: ollama/ollama pull ${{ matrix.model }}
 
       - name: Cache the .ollama directory
@@ -105,7 +117,7 @@ jobs:
       - name: Generate API documentation
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama run "${MODEL_NAME}"_custom > "${MODEL_NAME}_result.md"
+          ollama/ollama run "${MODEL_NAME}"_custom > "${MODEL_NAME}_apidoc.md"
 
       - name: Output the API documentation
         run: |
