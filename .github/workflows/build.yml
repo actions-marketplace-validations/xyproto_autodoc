@@ -9,19 +9,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Compute cache key segment
-        run: echo "CACHE_KEY=$(($GITHUB_RUN_NUMBER / 1000))" >> $GITHUB_ENV
-
-      - name: Cache Ollama Executable
+      - name: Cache ollama executable
         id: cache-ollama-exec
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
-          path: ollama
-          key: ollama-exec-${{ runner.os }}-${{ env.CACHE_KEY }}
+          path: ollama/ollama
+          key: ollama-exec-${{ runner.os }}-${{ github.run_id }}
 
       - name: Setup Go
         if: steps.cache-ollama-exec.outputs.cache-hit != 'true'
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v2
         with:
           go-version: '1.21'
 
@@ -33,31 +30,42 @@ jobs:
       - name: Test the ollama executable
         run: ollama/ollama --help
 
+      - name: Upload ollama executable as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ollama-executable
+          path: ollama/ollama
+
   pull-models:
     needs: build-ollama
     runs-on: ubuntu-latest
     strategy:
       matrix:
         model:
-          #- 'codeup:latest'
+          # - 'codeup:latest'
           - 'llama2:chat'
           # ... other models
     steps:
-      - name: Compute cache key segment
-        run: echo "CACHE_KEY=$(($GITHUB_RUN_NUMBER / 1000))" >> $GITHUB_ENV
-
-      - name: Cache Models
-        id: cache-models
-        uses: actions/cache@v3
+      - name: Download ollama executable artifact
+        uses: actions/download-artifact@v2
         with:
-          path: .ollama/
-          key: model-${{ matrix.model }}-${{ runner.os }}-${{ env.CACHE_KEY }}
+          name: ollama-executable
+          path: ollama/
+
+      - name: Set execute permissions for ollama
+        run: chmod +x ollama/ollama
+
+      - name: Run ollama in the background
+        run: ollama/ollama serve &
 
       - name: Pull the model
-        if: steps.cache-models.outputs.cache-hit != 'true'
-        run: |
-          ollama/ollama serve &
-          ollama/ollama pull ${{ matrix.model }}
+        run: ollama/ollama pull ${{ matrix.model }}
+
+      - name: Upload .ollama Directory as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ollama-models
+          path: .ollama/
 
   run-model:
     needs: pull-models
@@ -65,12 +73,27 @@ jobs:
     strategy:
       matrix:
         model:
-          #- 'codeup:latest'
+          # - 'codeup:latest'
           - 'llama2:chat'
           # ... other models
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Download ollama executable artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ollama-executable
+          path: ollama/
+
+      - name: Download .ollama Directory Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ollama-models
+          path: .ollama/
+
+      - name: Set execute permissions for ollama
+        run: chmod +x ollama/ollama
+
+      - name: Run ollama in the background
+        run: ollama/ollama serve &
 
       - name: Generate a Modelfile
         run: |
