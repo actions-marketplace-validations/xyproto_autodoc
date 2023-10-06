@@ -99,15 +99,16 @@ jobs:
         run: |
           echo "FROM ${{ matrix.model }}" > Modelfile
           echo "PARAMETER temperature 0.1" >> Modelfile
-          echo "SYSTEM \"\"\"" >> Modelfile
-          cat prompt.txt >> Modelfile
-          echo "\"\"\"" >> Modelfile
+          #echo "SYSTEM \"\"\"" >> Modelfile
+          #cat prompt.txt >> Modelfile
+          #echo "\"\"\"" >> Modelfile
 
       - name: Run ollama with the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
           ollama/ollama create "${MODEL_NAME}" -f Modelfile
-          ollama/ollama run "${MODEL_NAME}" "$(cat prompt.txt)" > "${MODEL_NAME}.md"
+          #ollama/ollama run "${MODEL_NAME}" "$(cat prompt.txt)" > "${MODEL_NAME}.md"
+          ollama/ollama run "${MODEL_NAME}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME).md"
 
       - name: Commit and push the API documentation
         run: |
