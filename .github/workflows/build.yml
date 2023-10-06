@@ -31,13 +31,12 @@ jobs:
       - name: Test the ollama executable
         run: ollama/ollama --help
 
-      - name: Upload ollama and models as artifacts
+      - name: Upload the ollama executable as an artifact
         uses: actions/upload-artifact@v3
         with:
           name: ollama-artifacts
           path: |
             ollama/ollama
-            .ollama/
 
   run-model:
     needs: setup-ollama
@@ -55,7 +54,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download ollama and models artifacts
+      - name: Get the ollama executable artifact
         uses: actions/download-artifact@v3
         with:
           name: ollama-artifacts
@@ -93,12 +92,12 @@ jobs:
       - name: Pull and build the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama create ${MODEL_NAME} -f Modelfile
+          ollama/ollama create "${MODEL_NAME}" -f Modelfile
 
       - name: Generate API documentation
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama run ${MODEL_NAME} > "${MODEL_NAME}_result.md"
+          ollama/ollama run "${MODEL_NAME}" > "${MODEL_NAME}_result.md"
 
       - name: Output the API documentation
         run: |
