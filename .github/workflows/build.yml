@@ -80,7 +80,7 @@ jobs:
         run: |
           echo "FROM ${{ matrix.model }}" > Modelfile
           echo "PARAMETER temperature 0.1" >> Modelfile
-          #echo "EMBED main.go" >> Modelfile
+          echo "EMBED main.go" >> Modelfile
           echo "SYSTEM \"\"\"" >> Modelfile
           cat main.go >> Modelfile
           cat prompt.txt >> Modelfile

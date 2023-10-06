@@ -1,1 +1,1 @@
-Write API documentation for the following code, in Markdown format:
+Write API documentation for the main.go code that was given above. Output the documentation in Markdown format.
