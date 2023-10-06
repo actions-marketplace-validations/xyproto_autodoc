@@ -3,109 +3,82 @@ name: Go package
 on: [push]
 
 jobs:
-  setup-ollama:
+  build-ollama:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache the ollama executable and models after these steps completes
-        id: cache-ollama
+      - name: Cache Ollama Executable
+        id: cache-ollama-exec
         uses: actions/cache@v3
         with:
-          path: |
-            ollama
-            .ollama/
-          key: ${{ runner.os }}-ollama-${{ steps.ollama-hash.outputs.hash }}
+          path: ollama
+          key: ollama-exec-${{ runner.os }}-${{ github.run_number // 1000 }} # Refresh every 1000 runs
 
       - name: Setup Go
-        if: steps.cache-ollama.outputs.cache-hit != 'true'
+        if: steps.cache-ollama-exec.outputs.cache-hit != 'true'
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
 
       - name: Build Ollama
-        if: steps.cache-ollama.outputs.cache-hit != 'true'
+        if: steps.cache-ollama-exec.outputs.cache-hit != 'true'
         run: |
           git clone --recursive https://github.com/jmorganca/ollama && cd ollama && go generate ./... && go build -v
-
-      - name: Get ollama source code hash
-        id: ollama-hash
-        run: echo "::set-output name=hash::$(tar c ollama | sha256sum | awk '{print $1}')"
 
       - name: Test the ollama executable
         run: ollama/ollama --help
 
-      - name: Run ollama in the background
-        if: steps.cache-ollama.outputs.cache-hit != 'true'
-        run: ollama/ollama serve &
-
-      - name: Pull the default model
-        if: steps.cache-ollama.outputs.cache-hit != 'true'
-        run: ollama/ollama pull llama2:chat
-
-  run-model:
-    needs: setup-ollama
+  pull-models:
+    needs: build-ollama
     runs-on: ubuntu-latest
     strategy:
       matrix:
         model:
           #- 'codeup:latest'
           - 'llama2:chat'
-          #- 'llama2:text'
-          #- 'mistral:7b-text'
-          #- 'mistral:7b-instruct'
-          #- 'wizardlm-uncensored:13b'
-          #- 'codeup:13b-llama2-chat'
+          # ... other models
+    steps:
+      - name: Cache Models
+        id: cache-models
+        uses: actions/cache@v3
+        with:
+          path: .ollama/
+          key: model-${{ matrix.model }}-${{ runner.os }}-${{ github.run_number // 1000 }} # Refresh every 1000 runs
+
+      - name: Pull the model
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        run: |
+          ollama/ollama serve &
+          ollama/ollama pull ${{ matrix.model }}
+
+  run-model:
+    needs: pull-models
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        model:
+          #- 'codeup:latest'
+          - 'llama2:chat'
+          # ... other models
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Cache the ollama executable and models after these steps completes
-        id: cache-ollama
-        uses: actions/cache@v3
-        with:
-          path: |
-            ollama
-            .ollama/
-          key: ${{ runner.os }}-ollama
-
-      - name: Set execute permissions for ollama
-        run: chmod +x ollama/ollama
-
-      - name: Run ollama in the background
-        run: ollama/ollama serve &
-
-      - name: Pull the current model
-        run: ollama/ollama pull ${{ matrix.model }}
 
       - name: Generate a Modelfile
         run: |
           echo "FROM ${{ matrix.model }}" > Modelfile
           echo "PARAMETER temperature 0.1" >> Modelfile
-          #echo "EMBED main.go" >> Modelfile
           echo "SYSTEM \"\"\"" >> Modelfile
-          #cat main.go >> Modelfile
           cat prompt.txt >> Modelfile
           echo "\"\"\"" >> Modelfile
 
-      - name: Cat the Modelfile
-        run: cat Modelfile
-
-      - name: Pull and build the model
+      - name: Run ollama with the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
           ollama/ollama create "${MODEL_NAME}" -f Modelfile
-
-      - name: Generate API documentation
-        run: |
-          MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
           ollama/ollama run "${MODEL_NAME}" "$(cat prompt.txt)" > "${MODEL_NAME}.md"
-
-      - name: Cat the Markdown document
-        run: |
-          MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
-          cat "${MODEL_NAME}.md"
 
       - name: Commit and push the API documentation
         run: |
