@@ -6,6 +6,9 @@ jobs:
   setup-ollama:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Cache the ollama executable and models after these steps completes
         id: cache-ollama
         uses: actions/cache@v3
@@ -13,11 +16,7 @@ jobs:
           path: |
             ollama
             .ollama/
-          key: ${{ runner.os }}-ollama
-
-      - name: Checkout code
-        if: steps.cache-ollama.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+          key: ${{ runner.os }}-ollama-${{ steps.ollama-hash.outputs.hash }}
 
       - name: Setup Go
         if: steps.cache-ollama.outputs.cache-hit != 'true'
@@ -30,13 +29,19 @@ jobs:
         run: |
           git clone --recursive https://github.com/jmorganca/ollama && cd ollama && go generate ./... && go build -v
 
+      - name: Get ollama source code hash
+        id: ollama-hash
+        run: echo "::set-output name=hash::$(tar c ollama | sha256sum | awk '{print $1}')"
+
       - name: Test the ollama executable
         run: ollama/ollama --help
 
       - name: Run ollama in the background
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
         run: ollama/ollama serve &
 
       - name: Pull the default model
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
         run: ollama/ollama pull codeup
 
   run-model:
