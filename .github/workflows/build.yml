@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download ollama and models artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ollama-artifacts
 
@@ -66,13 +66,25 @@ jobs:
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
+      - name: Pull the model
+        run: ollama/ollama pull ${{ matrix.model }}
+
+      - name: Cache .ollama directory
+        uses: actions/cache@v3
+        with:
+          path: .ollama
+          key: ${{ runner.os }}-${{ matrix.model }}-ollama-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.model }}-
+
       - name: Generate a Modelfile
         run: |
           echo "FROM ${{ matrix.model }}" > Modelfile
           echo "PARAMETER temperature 0.1" >> Modelfile
-          echo "EMBED main.go" >> Modelfile
+          #echo "EMBED main.go" >> Modelfile
           echo "SYSTEM \"\"\"" >> Modelfile
           cat prompt.txt >> Modelfile
+          cat main.go >> Modelfile
           echo "\"\"\"" >> Modelfile
 
       - name: Output the Modelfile
