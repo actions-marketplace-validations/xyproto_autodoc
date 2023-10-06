@@ -18,11 +18,14 @@ jobs:
             .ollama
           key: ${{ runner.os }}-ollama
 
-      - name: Build ollama
+      - name: Setup Go
         if: steps.cache-ollama.outputs.cache-hit != 'true'
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
+
+      - name: Build Ollama
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
         run: git clone --recursive https://github.com/jmorganca/ollama && cd ollama && go generate ./... && go build -v
 
       - name: Test the ollama executable
