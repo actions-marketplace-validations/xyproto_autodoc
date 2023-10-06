@@ -4,6 +4,11 @@ on: [push]
 
 jobs:
   build-ollama:
+    strategy:
+      matrix:
+        model:
+          - 'llama2:chat'
+          # ... other models
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,85 +35,22 @@ jobs:
       - name: Test the ollama executable
         run: ollama/ollama --help
 
-      - name: Upload ollama executable as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: ollama-executable
-          path: ollama/ollama
-
-  pull-models:
-    needs: build-ollama
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        model:
-          # - 'codeup:latest'
-          - 'llama2:chat'
-          # ... other models
-    steps:
-      - name: Download ollama executable artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: ollama-executable
-          path: ollama/
-
-      - name: Set execute permissions for ollama
-        run: chmod +x ollama/ollama
-
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
       - name: Pull the model
         run: ollama/ollama pull ${{ matrix.model }}
 
-      - name: Upload .ollama Directory as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: ollama-models
-          path: .ollama/
-
-  run-model:
-    needs: pull-models
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        model:
-          # - 'codeup:latest'
-          - 'llama2:chat'
-          # ... other models
-    steps:
-      - name: Download ollama executable artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: ollama-executable
-          path: ollama/
-
-      - name: Download .ollama Directory Artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: ollama-models
-          path: .ollama/
-
-      - name: Set execute permissions for ollama
-        run: chmod +x ollama/ollama
-
-      - name: Run ollama in the background
-        run: ollama/ollama serve &
-
       - name: Generate a Modelfile
         run: |
           echo "FROM ${{ matrix.model }}" > Modelfile
           echo "PARAMETER temperature 0.1" >> Modelfile
-          #echo "SYSTEM \"\"\"" >> Modelfile
-          #cat prompt.txt >> Modelfile
-          #echo "\"\"\"" >> Modelfile
 
       - name: Run ollama with the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
           ollama/ollama create "${MODEL_NAME}" -f Modelfile
-          #ollama/ollama run "${MODEL_NAME}" "$(cat prompt.txt)" > "${MODEL_NAME}.md"
-          ollama/ollama run "${MODEL_NAME}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME).md"
+          ollama/ollama run "${MODEL_NAME}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME}.md"
 
       - name: Commit and push the API documentation
         run: |
