@@ -45,7 +45,7 @@ jobs:
       matrix:
         model:
           - 'llama2:chat'
-          - 'llama2:text'
+          #- 'llama2:text'
           #- 'mistral:7b-text'
           #- 'mistral:7b-instruct'
           #- 'wizardlm-uncensored:13b'
@@ -65,13 +65,27 @@ jobs:
       - name: Run ollama in the background
         run: ollama/ollama serve &
 
-      - name: Pull an image
-        run: ollama/ollama pull ${{ matrix.model }}
+      - name: Generate a Modelfile
+        run: |
+          echo "FROM ${{ matrix.model }}" > Modelfile
+          echo "PARAMETER temperature 0.1" >> Modelfile
+          echo "EMBED main.go" >> Modelfile
+          echo "SYSTEM \"\"\"" >> Modelfile
+          cat prompt.txt >> Modelfile
+          echo "\"\"\"" >> Modelfile
 
-      - name: Generate a API documentation
+      - name: Output the Modelfile
+        run: cat Modelfile
+
+      - name: Pull and build the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama run ${{ matrix.model }} "$(cat prompt.txt) $(cat main.go)" > "${MODEL_NAME}_result.md"
+          ollama/ollama create ${MODEL_NAME} -f ./Modelfile
+
+      - name: Generate API documentation
+        run: |
+          MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
+          ollama/ollama run ${MODEL_NAME} > "${MODEL_NAME}_result.md"
 
       - name: Output the API documentation
         run: |
