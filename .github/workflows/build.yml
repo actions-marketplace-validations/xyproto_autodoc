@@ -9,12 +9,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Compute cache key segment
+        run: echo "CACHE_KEY=$(($GITHUB_RUN_NUMBER / 1000))" >> $GITHUB_ENV
+
       - name: Cache Ollama Executable
         id: cache-ollama-exec
         uses: actions/cache@v3
         with:
           path: ollama
-          key: ollama-exec-${{ runner.os }}-${{ github.run_number // 1000 }} # Refresh every 1000 runs
+          key: ollama-exec-${{ runner.os }}-${{ env.CACHE_KEY }}
 
       - name: Setup Go
         if: steps.cache-ollama-exec.outputs.cache-hit != 'true'
@@ -40,12 +43,15 @@ jobs:
           - 'llama2:chat'
           # ... other models
     steps:
+      - name: Compute cache key segment
+        run: echo "CACHE_KEY=$(($GITHUB_RUN_NUMBER / 1000))" >> $GITHUB_ENV
+
       - name: Cache Models
         id: cache-models
         uses: actions/cache@v3
         with:
           path: .ollama/
-          key: model-${{ matrix.model }}-${{ runner.os }}-${{ github.run_number // 1000 }} # Refresh every 1000 runs
+          key: model-${{ matrix.model }}-${{ runner.os }}-${{ env.CACHE_KEY }}
 
       - name: Pull the model
         if: steps.cache-models.outputs.cache-hit != 'true'
