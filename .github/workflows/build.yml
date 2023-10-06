@@ -42,7 +42,7 @@ jobs:
 
       - name: Pull the default model
         if: steps.cache-ollama.outputs.cache-hit != 'true'
-        run: ollama/ollama pull codeup
+        run: ollama/ollama pull llama2:chat
 
   run-model:
     needs: setup-ollama
@@ -50,8 +50,8 @@ jobs:
     strategy:
       matrix:
         model:
-          - 'codeup:latest'
-          #- 'llama2:chat'
+          #- 'codeup:latest'
+          - 'llama2:chat'
           #- 'llama2:text'
           #- 'mistral:7b-text'
           #- 'mistral:7b-instruct'
