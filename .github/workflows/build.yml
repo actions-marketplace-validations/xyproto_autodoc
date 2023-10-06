@@ -48,7 +48,7 @@ jobs:
           echo "PARAMETER temperature 0.2" >> Modelfile
           echo "SYSTEM \"\"\"" >> Modelfile
           cat main.go >> Modelfile
-          echo "Write the API documentation for the above code. Use Markdown." >> Modelfile
+          echo "Write the API documentation for the above code." >> Modelfile
           echo "\"\"\"" >> Modelfile
       - name: Build the model file
         run: |
@@ -57,15 +57,8 @@ jobs:
       - name: Run Ollama and display the output
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
-          ollama/ollama run "${MODEL_NAME}"
-
-      # > "${MODEL_NAME}.md"
-
-      #- name: Run Ollama and redirect to file
-      #  run: |
-      #    MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
-      #    ollama/ollama run "{{ matrix.model }}" "Write the API documentation for this code. Use Markdown. Here is the code: $(cat main.go)" > "${MODEL_NAME}.md"
-
+          ollama/ollama run "${MODEL_NAME}" "Use professional English. Generate a Markdown document." > "${MODEL_NAME}.md"
+          cat "${MODEL_NAME}.md"
       - name: Commit and push the API documentation
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}_custom" | tr ':-' '__')
