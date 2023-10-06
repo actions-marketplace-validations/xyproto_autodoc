@@ -83,8 +83,8 @@ jobs:
           echo "PARAMETER temperature 0.1" >> Modelfile
           #echo "EMBED main.go" >> Modelfile
           echo "SYSTEM \"\"\"" >> Modelfile
-          cat prompt.txt >> Modelfile
           cat main.go >> Modelfile
+          cat prompt.txt >> Modelfile
           echo "\"\"\"" >> Modelfile
 
       - name: Output the Modelfile
@@ -93,7 +93,7 @@ jobs:
       - name: Pull and build the model
         run: |
           MODEL_NAME=$(echo "${{ matrix.model }}" | tr ':-' '__')
-          ollama/ollama create ${MODEL_NAME} -f ./Modelfile
+          ollama/ollama create ${MODEL_NAME} -f Modelfile
 
       - name: Generate API documentation
         run: |
