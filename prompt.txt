@@ -1,1 +1,0 @@
-Imagine a REST server written in Go that can be used for registering and listing various types of vegetables. Now generate the API documentation for this REST server. Generate API.md in Markdown format.
