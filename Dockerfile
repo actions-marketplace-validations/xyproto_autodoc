@@ -2,6 +2,8 @@ FROM archlinux:base-20231001.0.182270
 
 ENV DEFAULT_MODEL codeup:13b-llama2-chat
 
+WORKDIR $GITHUB_WORKSPACE
+
 # Install ollama
 RUN pacman -Syu --noconfirm ollama
 

@@ -19,5 +19,3 @@ runs:
     - ${{ inputs.model }}
     - ${{ inputs.temperature }}
     - ${{ inputs.globs }}
-  env:
-    GITHUB_WORKSPACE: ${{ github.workspace }}
