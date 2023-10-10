@@ -1,9 +1,10 @@
 #FROM archlinux:latest
 #FROM archlinux:base-devel
-FROM archlinux:base-devel-20231001.0.182270
+#FROM archlinux:base-devel-20231001.0.182270
+FROM archlinux:base-20231001.0.182270
 
-# Install necessary dependencies
-RUN pacman -Syu --noconfirm base-devel cmake git go ollama
+# Install dependencies
+RUN pacman -Syu --noconfirm git ollama
 
 # Start ollama in the background and pull the model
 RUN ollama serve & \
