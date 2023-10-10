@@ -17,6 +17,12 @@ echo "\"\"\"" >> Modelfile
 # Start ollama in the background
 ollama serve &
 
+# Give ollama some time to start
+sleep 10
+
+# Pull the model
+ollama pull $MODEL
+
 # Build the model file
 MODEL_NAME=$(echo "${MODEL}_custom" | tr ':-' '__')
 ollama create "${MODEL_NAME}" -f Modelfile
