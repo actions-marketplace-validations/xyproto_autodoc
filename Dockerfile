@@ -1,7 +1,7 @@
 FROM archlinux:latest
 
 # Install necessary dependencies
-RUN pacman -Syu --noconfirm git go cmake
+RUN pacman -Syu --noconfirm base-devel git go cmake
 
 # Build Ollama
 RUN git clone --recursive https://github.com/jmorganca/ollama /ollama && \
