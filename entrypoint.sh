@@ -7,7 +7,7 @@ TEMPERATURE=${INPUT_TEMPERATURE:-0.2}
 # Check if /workspace exists
 if [ ! -d "/workspace" ]; then
     echo "The /workspace directory needs to exist for the documentation generation to work."
-    exit 1
+    exit 0 // exit normally
 fi
 
 # Generate a Modelfile
