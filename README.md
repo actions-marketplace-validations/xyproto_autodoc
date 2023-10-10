@@ -6,4 +6,4 @@ Take a look at https://github.com/xyproto/vegetables for example use.
 
 * License: BSD-3
 * Author: Alexander F. Rødseth &lt;xyproto@archlinux.org&gt;
-* Version: 1.2.1
+* Version: 1.2.2
