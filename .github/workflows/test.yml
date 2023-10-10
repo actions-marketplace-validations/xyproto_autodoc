@@ -3,7 +3,7 @@ name: Action test
 on: [push]
 
 jobs:
-  Action test:
+  'Action test':
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
