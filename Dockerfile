@@ -1,4 +1,6 @@
-FROM archlinux:latest
+#FROM archlinux:latest
+#FROM archlinux:base-devel
+FROM archlinux:base-devel-20231001.0.182270
 
 # Install necessary dependencies
 RUN pacman -Syu --noconfirm base-devel git go cmake
