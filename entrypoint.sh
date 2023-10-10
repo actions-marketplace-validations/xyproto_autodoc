@@ -16,8 +16,8 @@ echo "FROM $MODEL" > Modelfile
 echo "PARAMETER temperature $TEMPERATURE" >> Modelfile
 echo 'SYSTEM """' >> Modelfile
 
-# Append files matching the globs to the Modelfile
-IFS=',' read -ra GLOB_ARRAY <<< "$GLOBS"  # Convert comma-separated globs into an array
+# Append files matching the comma separated globs to the Modelfile
+IFS=',' read -ra GLOB_ARRAY <<< "$GLOBS"
 for GLOB in "${GLOB_ARRAY[@]}"; do
     find "$GITHUB_WORKSPACE" -name "$GLOB" -type f -exec cat {} + >> Modelfile
 done
@@ -38,7 +38,9 @@ ollama pull $MODEL
 MODEL_NAME=$(echo "${MODEL}_custom" | tr ':-' '__')
 ollama create "${MODEL_NAME}" -f Modelfile
 
-# Run Ollama and display the output
+# Run Ollama and generate the documentation
 mkdir -p "$GITHUB_WORKSPACE/github-pages"
 ollama run "${MODEL_NAME}" "Use professional English. Generate a Markdown document." > "$GITHUB_WORKSPACE/github-pages/${MODEL_NAME}.md"
+
+# Output the resulting document
 cat "$GITHUB_WORKSPACE/github-pages/${MODEL_NAME}.md"
