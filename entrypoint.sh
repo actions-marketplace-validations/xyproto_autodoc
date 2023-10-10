@@ -3,9 +3,6 @@
 # Variables
 MODEL=${INPUT_MODEL}
 
-# Start ollama in the background
-/ollama/ollama serve &
-
 # Generate a Modelfile
 echo "FROM $MODEL" > Modelfile
 echo "PARAMETER temperature 0.2" >> Modelfile
@@ -13,6 +10,9 @@ echo "SYSTEM \"\"\"" >> Modelfile
 cat main.go >> Modelfile
 echo "Write the API documentation for the above code." >> Modelfile
 echo "\"\"\"" >> Modelfile
+
+# Start ollama in the background
+/ollama/ollama serve &
 
 # Build the model file
 MODEL_NAME=$(echo "${MODEL}_custom" | tr ':-' '__')
