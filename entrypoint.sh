@@ -2,18 +2,24 @@
 
 # Variables
 MODEL=${INPUT_MODEL}
-TEMPERATURE=${INPUT_TEMPERATURE:-0.2}  # Default to 0.2 if not provided
+TEMPERATURE=${INPUT_TEMPERATURE:-0.2}
+
+# Check if /workspace exists
+if [ ! -d "/workspace" ]; then
+    echo "The /workspace directory needs to exist for the documentation generation to work."
+    exit 1
+fi
 
 # Generate a Modelfile
 echo "FROM $MODEL" > Modelfile
 echo "PARAMETER temperature $TEMPERATURE" >> Modelfile
-echo "SYSTEM \"\"\"" >> Modelfile
+echo 'SYSTEM """' >> Modelfile
 
 # Append all Go files to the Modelfile
 find /workspace -name "*.go" -type f -exec cat {} + >> Modelfile
 
 echo "Write the API documentation for the above code." >> Modelfile
-echo "\"\"\"" >> Modelfile
+echo '"""' >> Modelfile
 
 # Start ollama in the background
 ollama serve &
