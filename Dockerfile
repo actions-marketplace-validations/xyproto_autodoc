@@ -1,6 +1,5 @@
-#FROM archlinux:latest
-#FROM archlinux:base-devel
 FROM archlinux:base-devel-20231001.0.182270
+ENV DEFAULT_MODEL codeup:13b-llama2-chat
 
 # Install dependencies
 RUN pacman -Syu --noconfirm git go cmake
@@ -15,7 +14,6 @@ RUN git clone --recursive https://github.com/jmorganca/ollama /ollama && \
     rm -rf /ollama
 
 # Start ollama in the background and pull the default model
-ENV DEFAULT_MODEL codeup:13b-llama2-chat
 RUN ollama serve & sleep 10 && ollama pull "$DEFAULT_MODEL"
 
 # Copy the script that will run when the action is triggered
