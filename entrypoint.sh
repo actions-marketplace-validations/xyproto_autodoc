@@ -39,8 +39,8 @@ MODEL_NAME=$(echo "${MODEL}_custom" | tr ':-' '__')
 ollama create "${MODEL_NAME}" -f Modelfile
 
 # Run Ollama and generate the documentation
-mkdir -p "$GITHUB_WORKSPACE/github-pages"
-ollama run "${MODEL_NAME}" "Use professional English. Generate a Markdown document." > "$GITHUB_WORKSPACE/github-pages/${MODEL_NAME}.md"
+mkdir -p "$GITHUB_WORKSPACE/docs"
+ollama run "${MODEL_NAME}" "Use professional English. Generate a Markdown document." > "$GITHUB_WORKSPACE/docs/${MODEL_NAME}.md"
 
 # Output the resulting document
-cat "$GITHUB_WORKSPACE/github-pages/${MODEL_NAME}.md"
+cat "$GITHUB_WORKSPACE/docs/${MODEL_NAME}.md"
