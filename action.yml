@@ -8,11 +8,16 @@ inputs:
     description: 'Temperature setting for the model'
     required: false
     default: '0.2'
+  globs:
+    description: 'File patterns to search for'
+    required: false
+    default: '*.go'
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
     - ${{ inputs.model }}
     - ${{ inputs.temperature }}
-  volumes:
-    - ${{ github.workspace }}/github-pages:/workspace/github-pages
+    - ${{ inputs.globs }}
+  env:
+    GITHUB_WORKSPACE: ${{ github.workspace }}
