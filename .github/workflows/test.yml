@@ -1,9 +1,9 @@
-name: Action test
+name: Action Test
 
 on: [push]
 
 jobs:
-  'Action test':
+  Docker:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
