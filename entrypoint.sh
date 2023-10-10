@@ -2,10 +2,11 @@
 
 # Variables
 MODEL=${INPUT_MODEL}
+TEMPERATURE=${INPUT_TEMPERATURE:-0.2}  # Default to 0.2 if not provided
 
 # Generate a Modelfile
 echo "FROM $MODEL" > Modelfile
-echo "PARAMETER temperature 0.2" >> Modelfile
+echo "PARAMETER temperature $TEMPERATURE" >> Modelfile
 echo "SYSTEM \"\"\"" >> Modelfile
 
 # Append all Go files to the Modelfile
