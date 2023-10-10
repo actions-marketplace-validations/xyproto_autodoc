@@ -4,4 +4,4 @@ A GitHub action for automatically generating API documentation and checking in t
 
 Currently only small projects written in Go are supported.
 
-Take a look at https://github.com/xyproto/autodoc-test for example use.
+Take a look at https://github.com/xyproto/vegetables for example use.
