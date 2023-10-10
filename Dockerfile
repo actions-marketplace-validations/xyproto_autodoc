@@ -11,7 +11,7 @@ RUN git clone --recursive https://github.com/jmorganca/ollama /ollama && \
 
 # Start ollama in the background and pull the model
 RUN /ollama/ollama serve & \
-    sleep 10 && \  # Give ollama some time to start
+    sleep 10 && \
     /ollama/ollama pull $MODEL
 
 # Copy the script that will run when the action is triggered
