@@ -19,3 +19,6 @@ runs:
     - ${{ inputs.model }}
     - ${{ inputs.temperature }}
     - ${{ inputs.globs }}
+branding:
+  icon: book
+  color: orange
