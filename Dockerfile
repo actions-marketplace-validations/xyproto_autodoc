@@ -1,6 +1,6 @@
 FROM archlinux:base-20231001.0.182270
 
-ENV DEFAULT_MODEL codeup:13b-llama2-chat
+ENV DEFAULT_MODEL codeup:13b-llama2-chat-q2_K
 
 WORKDIR $GITHUB_WORKSPACE
 
