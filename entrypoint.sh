@@ -15,13 +15,13 @@ echo "Write the API documentation for the above code." >> Modelfile
 echo "\"\"\"" >> Modelfile
 
 # Start ollama in the background
-/ollama/ollama serve &
+ollama serve &
 
 # Build the model file
 MODEL_NAME=$(echo "${MODEL}_custom" | tr ':-' '__')
-/ollama/ollama create "${MODEL_NAME}" -f Modelfile
+ollama create "${MODEL_NAME}" -f Modelfile
 
 # Run Ollama and display the output
 mkdir -p /workspace/github-pages
-/ollama/ollama run "${MODEL_NAME}" "Use professional English. Generate a Markdown document." > "/workspace/github-pages/${MODEL_NAME}.md"
+ollama run "${MODEL_NAME}" "Use professional English. Generate a Markdown document." > "/workspace/github-pages/${MODEL_NAME}.md"
 cat "/workspace/github-pages/${MODEL_NAME}.md"
