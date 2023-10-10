@@ -1,0 +1,13 @@
+name: 'Generate API Documentation'
+description: 'Generate API documentation using Ollama'
+inputs:
+  model:
+    description: 'Model to use for generating documentation'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.model }}
+  volumes:
+    - ${{ github.workspace }}/github-pages:/workspace/github-pages
