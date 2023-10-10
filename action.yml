@@ -1,5 +1,10 @@
 name: 'Generate API Documentation'
-description: 'Generate API documentation using Ollama'
+description: 'Generate API documentation using LLMs (Large Language Models) and Ollama'
+
+branding:
+  icon: book
+  color: orange
+
 inputs:
   model:
     description: 'Model to use for generating documentation'
@@ -12,6 +17,7 @@ inputs:
     description: 'File patterns to search for'
     required: false
     default: '*.go'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -19,6 +25,3 @@ runs:
     - ${{ inputs.model }}
     - ${{ inputs.temperature }}
     - ${{ inputs.globs }}
-branding:
-  icon: book
-  color: orange
