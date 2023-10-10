@@ -9,9 +9,8 @@ RUN pacman -Syu --noconfirm base-devel git go cmake
 RUN git clone --recursive https://github.com/jmorganca/ollama /ollama && \
     cd /ollama && \
     go generate ./... && \
-    go build -v &&
-    cp ollama /usr/bin/ollama &&
-    chmod +x /usr/bin/ollama &&
+    go build -v && \
+    install -Dm755 ollama /usr/bin/ollama && \
     rm -rf /ollama
 
 # Start ollama in the background and pull the model

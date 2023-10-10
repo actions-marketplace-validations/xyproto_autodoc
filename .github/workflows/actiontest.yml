@@ -1,4 +1,4 @@
-name: Test Autodoc Action
+name: Test the action
 
 on: [push]
 
